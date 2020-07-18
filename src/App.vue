@@ -5,10 +5,10 @@
       <ItemForm @save="addQuadrantItem" :user="user"></ItemForm>
     </div>
     <div class="btn-group">
-      <button class="btn btn-primary" @click="showYesterday=!showYesterday">Show Yesterday</button>
-      <button class="btn btn-primary" @click="showBacklog=!showBacklog">Show BackLog</button>
+      <button class="btn btn-primary" @click="showYesterday=!showYesterday">Yesterday</button>
+      <button class="btn btn-primary" @click="showBacklog=!showBacklog">BackLog</button>
       <button class="btn btn-primary">Show Calendar</button>
-      <button class="btn btn-primary">Search</button>
+      <button class="btn btn-primary">Complete Day</button>
     </div>
     <kanbanData
       ref="Kanban"
@@ -40,15 +40,16 @@ export default {
   setup(props) {
     const list = reactive([]);
     const yesterday = reactive([]);
-    const showYesterday = ref(false)
-    const showBacklog = ref(false)
+    const showYesterday = ref(true)
+    const showBacklog = ref(true)
 
     const updateStatus = (item) => {
 
     }
 
-    const deleteItem = (item) => {
-
+    const deleteItem = (deletedItem) => {
+      const index = list.findIndex( item => deletedItem.id == item.id);
+      list.splice(index, 1);
     }
 
     const completeDay = (item) => {
@@ -62,6 +63,9 @@ export default {
       list,
       showYesterday,
       showBacklog,
+      deleteItem,
+      updateStatus,
+      completeDay,
 
       addQuadrantItem(item) {
         list.push(item);

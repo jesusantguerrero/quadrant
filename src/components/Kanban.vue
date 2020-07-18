@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- <kanban-board :stages="stages" :blocks="data"> </kanban-board> -->
     <div class="row d-flex mt-5">
       <div class="col state-card card" :class="`color-yerterday`" v-if="showYesterday">
         <h4 class="title">
@@ -31,115 +30,76 @@
           {{ stage }} <span class="small">({{ quadrants[stage].length }})</span>
         </h4>
         <div
-          group="notes"
-          v-bind="dragOptions"
           :id="stage"
-          @start="isDragging = true"
-          @end="isDragging = false"
           v-if="quadrants[stage]"
           class="items-container"
-          @change="onChange($event, stage)"
         >
           <QuadrantTask
             v-for="item in quadrants[stage]"
             :item="item"
+            :stages="stages"
             :key="item.id"
             @deleted="$emit('deleted', $event)"
             @changed="$emit('changed', $event)"
           />
         </div>
       </div>
-
       </template>
     </div>
   </div>
 </template>
 
-<script>
-import draggable from "vuedraggable";
+<script setup="props, { emit }">
 import QuadrantTask from "./QuadrantTask.vue";
+import { watch, computed, toRefs, reactive} from "vue"
 
 export default {
   components: {
-    draggable,
     QuadrantTask
   },
   props: {
-    data: {
-      type: Array,
-      default() {
-        return [];
-      }
-    },
-    committed: {
-      type: Array,
-      default() {
-        return [];
-      }
-    },
-    showYesterday: {
-      type: Boolean
-    },
-    showBacklog: {
-      type: Boolean
-    }
-  },
-  data() {
-    return {
-      isDragging: false,
-      dialogVisible: false,
-      quadrants: {
-        backlog: [],
-        do: [],
-        schedule: [],
-        delegate: [],
-        delete: []
+      data: {
+        type: Array,
+        default() {
+          return [];
+        }
       },
-      stages: ["do", "schedule", "delegate", "delete", "backlog"]
-    };
-  },
+      committed: {
+        type: Array,
+        default() {
+          return [];
+        }
+      },
+      showYesterday: {
+        type: Boolean
+      },
+      showBacklog: {
+        type: Boolean
+      }
+    }
+}  
+export const {data, committed, showYesterday, showBacklog} = toRefs(props);
+export const quadrants =  reactive({
+      backlog: [],
+      do: [],
+      schedule: [],
+      delegate: [],
+      delete: []
+    });
+export const stages = ["do", "schedule", "delegate", "delete", "backlog"]
 
-  watch: {
-    data: {
-      handler() {
-        this.stages.forEach(stage => {
-          this.quadrants[stage] = this.filterByState(stage);
-        });
-      },
-      deep: true,
-      immediate: true
-    }
-  },
-  computed: {
-    dragOptions() {
-      return {
-        animation: 0,
-        group: "description",
-        ghostClass: "ghost"
-      };
-    }
-  },
-  methods: {
-    filterByState(state) {
-      return this.data
-        .filter(block => block.state == state && block.commit == false)
-        .slice();
-    },
-    onChange({ added }, stage) {
-      if (added) {
-        added.element.state = stage;
-        this.$emit("changed", added.element);
-      }
-    },
-    openDialog() {
-      this.dialogVisible = true;
-    },
-    completeDay() {
-      this.dialogVisible = false;
-      this.$emit("complete-day");
-    }
-  }
-};
+watch(data, (data) => {
+  stages.forEach(stage => {
+    quadrants[stage] = filterByState(data, stage);
+  })
+}, {
+  deep: true,
+  immediate: true
+})
+
+const filterByState = (data, stage) => {
+  return data.filter(block => block.state == stage && block.commit == false).slice();
+}
 </script>
 
 <style lang="scss">

@@ -53,18 +53,22 @@
   };
 
   export const stages = reactive(['backlog', 'do', 'schedule', 'delegate', 'delete'])
+  
   export const { item, allowCheck } = toRefs(props);
+
   export const updateDone = (item) => {
     item.completedAt = item.done
       ? new Date().toISOString().slice(0, 10)
       : null;
     emit("changed", item);
   }
+  
   export const changeStage = (item, state) => {
     item.state = state
     emit("changed", item);
   }
-  export const deleteItem = item => emit("deleted", item)
+
+  export const deleteItem = item => { emit("deleted", item) }
 </script>
 
 <style lang="scss" scoped>
